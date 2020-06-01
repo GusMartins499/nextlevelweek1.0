@@ -21,4 +21,4 @@ To access the layout use [Figma](https://www.figma.com/file/1SxgOMojOB2zYT0Mdk28
 
 ## :memo: License
 
-This project is under the MIT license. See [LICENSE](LICENSE) for more details.
+This project is under the MIT license. See [LICENSE](LICENSE.txt) for more details.
