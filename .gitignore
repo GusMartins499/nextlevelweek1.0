@@ -1,0 +1,27 @@
+### Ignora pasta server ###
+.server/
+
+### Node ###
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+### ReactNative ###
+# React Native Stack Base
+
+.expo
+__generated__
+
+### ReactNative.Android Stack ###
+# Built application files
+*.apk
+*.ap_
+*.aab
