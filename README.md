@@ -15,6 +15,7 @@ This project was developed with the following technologies:
 - [React](https://reactjs.org)
 - [React Native](https://facebook.github.io/react-native/)
 - [TypeScript](https://www.typescriptlang.org/)
+- [Knex](http://knexjs.org/)
 
 ## :sparkles: Overview of aplication
 To access the layout use [Figma](https://www.figma.com/file/1SxgOMojOB2zYT0Mdk28lB/).
