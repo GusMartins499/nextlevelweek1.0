@@ -1,5 +1,5 @@
-import knex from '../database/connection';
 import { Request, Response } from 'express';
+import knex from '../database/connection';
 
 class PointsController {
   async index(request: Request, response: Response) {
@@ -17,8 +17,15 @@ class PointsController {
       .distinct()
       .select('points.*');
 
-    return response.json(points);
-  };
+    const serializedPoints = points.map(point => { 
+      return {
+        ...point,
+        image_url: `http://192.168.1.107:3333/uploads/${point.image}`,
+      };
+    });
+    
+    return response.json(serializedPoints);
+  }
 
   async show(request: Request, response: Response) {
     const { id } = request.params;
@@ -26,7 +33,12 @@ class PointsController {
     const point = await knex('points').where('id', id).first();
 
     if (!point) {
-      return response.status(400).json({ message: 'Point not found' });
+      return response.status(400).json({ message: 'Point not found.' });
+    }
+
+    const serializedPoint = { 
+      ...point,
+      image_url: `http://192.168.1.107:3333/uploads/${point.image}`,
     };
 
     const items = await knex('items')
@@ -34,7 +46,7 @@ class PointsController {
       .where('point_items.point_id', id)
       .select('items.title');
 
-    return response.json({ point, items });
+    return response.json({ point: serializedPoint, items });
   }
 
   async create(request: Request, response: Response) {
@@ -49,45 +61,42 @@ class PointsController {
       items
     } = request.body;
 
-    // COMO TEM UM INSERT QUE DEPENDE DO OUTRO, CASO ACONTEÇA ALGUM ERRO NO SEGUNDO INSERT, O PRIMEIRO NÃO VAI CONTINUAR
     const trx = await knex.transaction();
 
     const point = {
-      image: 'https://images.unsplash.com/photo-1556767576-5ec41e3239ea?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60',
+      image: request.file.filename,
       name,
       email,
       whatsapp,
       latitude,
       longitude,
       city,
-      uf,
+      uf
     };
-
+  
     const insertedIds = await trx('points').insert(point);
-
-    //  PEGA SOMENTE O ID QUE FOI RETORNADO PELO INSERT, COMO ESTOU ADICIONANDO UM ARRAY (OBJETO), EU PEGO A PRIMEIRA POSIÇÃO QUE É O ID.
+  
     const point_id = insertedIds[0];
-
-    // PEGA SOMENTE OS ITEMS QUE INSERI NO BODY E RETORNA UM OUTRO ARRAY COM O ID DO POINT E O ID DOS ITEMS.
-    const pointItems = items.map((item_id: number) => {
-      return {
-        item_id,
-        point_id,
-      };
-    });
-
-    // INSERE ESSE ARRAY QUE RETORNEI PELO MAP EM POINT_ITEMS (RELACIONAMENTO MANY TO MANY), TABELA PIVO.
+  
+    const pointItems = items
+      .split(',')
+      .map((item: string) => Number(item.trim()))
+      .map((item_id: number) => {
+        return {
+          item_id,
+          point_id,
+        };
+      })
+  
     await trx('point_items').insert(pointItems);
 
-    // FAZ REALMENTE O INSERT NA BASE DE DADOS
     await trx.commit();
-
-    // RETORNA OS DADOS
-    return response.json({
+  
+    return response.json({ 
       id: point_id,
       ...point,
     });
-  };
-};
+  }
+}
 
 export default PointsController;
